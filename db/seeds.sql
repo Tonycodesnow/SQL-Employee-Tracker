@@ -6,13 +6,13 @@ VALUES
    ('finance'),
     ('hr');
 
-INSERT INTO employee(first_name, last_name, email, role_id)
+INSERT INTO employees(first_name, last_name, role_id, manager_id)
 VALUES 
-('Antonio', 'Huerta', 'Antonio@live.com', 1),
- ('Juan', 'Dela Cruz', 'JuanD@live.com', 2),
-  ('Lucy', 'Smith', 'Lucy1@rock.com', 3),
-   ('Jose', 'Rizal', 'RizalJ@gmail.com', 4),
-    ('Mary', 'Jane', 'MJ@spidey.com', 5);
+('Antonio', 'Huerta', 1, 2),
+('Juan', 'DelaCruz', 2, 0),
+('Lucy', 'Smith', 3, 3),
+('Jose', 'Rizal', 4, 1),
+('Mary', 'Jane', 5, 0);
 
 INSERT INTO role(title, salary, department_id) 
 VALUES 
