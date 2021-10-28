@@ -15,17 +15,17 @@ const db = mysql.createConnection(
       // Your MySQL username,
       user: "root",
       // Your MySQL password
-      password: "",
-      database: "election",
+      password: "#Lun8#K8i#D0m1?",
+      database: "employees",
     },
-    console.log("Connected to the election database.")
+    console.log("Connected to the employees database.")
 );
 
 // get all employees
 app.get('/api/employees', (req, res) => {
     const sql = 'SELECT * FROM employees';
 
-    connection.query(sql, (err, row) => {
+    db.query(sql, (err, row) => {
         if (err) {
             res.status(500).json({ error : err.message });
             return;
@@ -76,32 +76,32 @@ app.delete('/api/employee/:id', (req,res) => {
 });
 
 // Create a employee
-app.post("/api/employee", ({ body }, res) => {
-    // const errors = SOMEWHERE(
-    //   "first_name",
-    //   "last_name",
-    //   "role_id",
-    //   "manager_id"
-    // );
-    if (errors) {
-      res.status(400).json({ error: errors });
-      return;
-    }
-    const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
-     VALUES (?, ?, ?, ?)`;
-    const params = [body.first_name, body.last_name, body.role_id, body.manager_id];
+// app.post("/api/employee", ({ body }, res) => {
+//     // const errors = SOMEWHERE(
+//     //   "first_name",
+//     //   "last_name",
+//     //   "role_id",
+//     //   "manager_id"
+//     // );
+//     if (errors) {
+//       res.status(400).json({ error: errors });
+//       return;
+//     }
+//     const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
+//      VALUES (?, ?, ?, ?)`;
+//     const params = [body.first_name, body.last_name, body.role_id, body.manager_id];
 
-    db.query(sql, params, (err, result) => {
-      if (err) {
-        res.status(400).json({ error: err.message });
-        return;
-      }
-      res.json({
-        message: "success",
-        data: body,
-      });
-    });
-  });
+//     db.query(sql, params, (err, result) => {
+//       if (err) {
+//         res.status(400).json({ error: err.message });
+//         return;
+//       }
+//       res.json({
+//         message: "success",
+//         data: body,
+//       });
+//     });
+// });
 
 app.use((req, res) => {
     res.status(404).send();
