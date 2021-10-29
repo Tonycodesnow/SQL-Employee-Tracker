@@ -1,5 +1,6 @@
-const mysql = require("mysql2");
 const express = require("express");
+const db = require('./db/connection');
+const apiRoutes = require('./routes/apiRoutes');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -8,99 +9,8 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-const db = mysql.createConnection(
-  {
-    host: "localhost",
-    // Your MySQL username,
-    user: "root",
-    // Your MySQL password
-    password: "",
-    database: "employees",
-  },
-  console.log("Connected to the employees database.")
-);
-
-// get all employees
-app.get("/api/employees", (req, res) => {
-  const sql = "SELECT * FROM employees";
-
-  db.query(sql, (err, row) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: row,
-    });
-  });
-});
-
-// get a single employee
-app.get("/api/employee/:id", (req, res) => {
-  const sql = "SELECT * FROM employees WHERE id = ?";
-  const params = [req.params.id];
-  db.query(sql, params, (err, rows) => {
-    if (err) {
-      res.status(400).json({ error: err.message });
-      return;
-    }
-    res.json({
-      message: "Success",
-      data: rows,
-    });
-  });
-});
-
-// Delete an employee
-app.delete("/api/employee/:id", (req, res) => {
-  const sql = "DELETE FROM employees WHERE id = ?";
-  const params = [req.params.id];
-
-  db.query(sql, params, (err, result) => {
-    if (err) {
-      res.statusMessage(400).json({ error: err.message });
-    } else if (!result.affectedRows) {
-      res.json({
-        message: "No employee found",
-      });
-    } else {
-      res.json({
-        message: "Deleted",
-        changes: result.affectedRows,
-        id: req.params.id,
-      });
-    }
-  });
-});
-
-// Create a employee
-// app.post("/api/employee", ({ body }, res) => {
-//     // const errors = SOMEWHERE(
-//     //   "first_name",
-//     //   "last_name",
-//     //   "role_id",
-//     //   "manager_id"
-//     // );
-//     if (errors) {
-//       res.status(400).json({ error: errors });
-//       return;
-//     }
-//     const sql = `INSERT INTO employees (first_name, last_name, role_id, manager_id)
-//      VALUES (?, ?, ?, ?)`;
-//     const params = [body.first_name, body.last_name, body.role_id, body.manager_id];
-
-//     db.query(sql, params, (err, result) => {
-//       if (err) {
-//         res.status(400).json({ error: err.message });
-//         return;
-//       }
-//       res.json({
-//         message: "success",
-//         data: body,
-//       });
-//     });
-// });
+// Use api routes
+app.use('/api', apiRoutes);
 
 app.get("/api/roles", (req, res) => {
   const sql = `SELECT * FROM roles`;
