@@ -2,6 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 router.use(require('./employeeRoutes'));
-// router.use(require('./partyRoutes'));
+router.use(require('./rolesRoutes'));
 
 module.exports = router;
