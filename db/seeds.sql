@@ -16,8 +16,8 @@ VALUES
 
 INSERT INTO roles (title, salary, department_id) 
 VALUES 
-('Engineer', 50000, 1),
- ('Sales', 60000, 2),
+('Engineer', 90000, 1),
+ ('Sales', 80000, 2),
   ('Marketing', 70000, 3),
-   ('Finance', 80000, 4),
-    ('HR', 90000, 5);
+   ('Finance', 100000, 4),
+    ('HR', 60000, 5);
