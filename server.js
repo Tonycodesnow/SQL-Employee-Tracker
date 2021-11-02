@@ -1,108 +1,117 @@
-const express = require("express");
-const db = require("./db/connection");
+// const express = require("express");
+// const db = require("./db/connection");
 const inquirer = require("inquirer");
-const apiRoutes = require("./routes/apiRoutes");
+// const apiRoutes = require("./routes/apiRoutes");
 const cTable = require("console.table");
+const connection = require("./db/connection");
 
-const app = express();
-const PORT = process.env.PORT || 3001;
+// const app = express();
+// const PORT = process.env.PORT || 3001;
 
 // express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// app.use(express.urlencoded({ extended: false }));
+// app.use(express.json());
 
-// Use api routes
-app.use("/api", apiRoutes);
+// // Use api routes
+// app.use("/api", apiRoutes);
 
-app.use((req, res) => {
-  res.status(404).send();
-});
+// app.use((req, res) => {
+//   res.status(404).send();
+// });
 
 // Start server after DB connection
-db.connect((err) => {
+// db.connect((err) => {
+//   if (err) throw err;
+//   console.log("Database connected.");
+//   app.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
+// });
+connection.connect(function (err) {
   if (err) throw err;
-  console.log("Database connected.");
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  begin();
 });
 
-// function which Begins the prompts for the user 
+var roleArr = [];
+var managerArr = [];
+
+// function which Begins the prompts for the user
 function begin() {
   inquirer
-  .prompt([
-    {
+    .prompt([
+      {
         type: "list",
         message: "What would you like to do?",
         name: "action",
         choices: [
-          "View All the Employees",
-          "View All the Employees By Department",
-          "View All the Employees by Role",
-          "Add An Employee",
+          "View All the employeess",
+          "View All the employeess By Department",
+          "View All the employeess by Role",
+          "Add An employees",
           "Add A Department",
           "Add A Role",
-          "Update the Employee Role",
+          "Update the employees Role",
           "Quit",
         ],
       },
     ])
-    .then(function (res) {
-      switch (res.action) {
-        case "View All the Employees":
+    .then(function (answer) {
+      switch (answer.action) {
+        case "View All the employeess":
           viewAll();
           break;
-          case "View All the Employees By Department":
-            viewDept();
-            break;
-            case "View All the Employees by Role":
-              viewRole();
+        case "View All the employeess By Department":
+          viewDept();
           break;
-          case "Add An Employee":
-            addEmployee();
-            break;
-            case "Add A Department":
+        case "View All the employeess by Role":
+          viewRole();
+          break;
+        case "Add An employees":
+          addemployees();
+          break;
+        case "Add A Department":
           addDept();
           break;
-          case "Add A Role":
-            addRole();
+        case "Add A Role":
+          addRole();
           break;
-          case "Update the Employee Role":
-            updateEmployee();
-            break;
-            case "Quit":
-              return;
-            }
-    });
-  }
-  
-  // View the list of all employees
-  function viewAll() {
-    db.query(
-      "SELECT employee.first_name, employee.last_name, role.title, role.salary, department.department, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id left join employee e on employee.manager_id = e.id;",
-      function (err, res) {
-        if (err) throw err;
-  
-        console.table(res);
-        begin();
+        case "Update the employees Role":
+          updateemployees();
+          break;
+        case "Quit":
+          return;
+          console.log(answer.action);
       }
-    );
-  }
+    });
+}
 
-  // View the list of all employees by department
-  function viewDept() {
-    db.query("SELECT * FROM department", function (err, res) {
+// View the list of all employees
+function viewAll() {
+  connection.query(
+    "SELECT employee.first_name, employee.last_name, role.title, role.salary, CONCAT(manager.first_name, ' ' ,manager.last_name) AS manager FROM employee INNER JOIN role on employee.role_id = role.id INNER JOIN department on department.id = role.department_id left join employee manager on employee.manager_id = employee.id;",
+    function (err, res) {
+      if (err) throw err;
+
+      console.table(res);
+      begin();
+    }
+  );
+}
+
+// View the list of all employees by department
+function viewDept() {
+  connection.query("SELECT * FROM department", function (err, res) {
     if (err) throw err;
-    
+
     inquirer
-    .prompt([
-      {
-        type: "list",
-        name: "department",
-        message: "Which department's employees would you like to see?",
-        choices: function () {
-          var choiceArray = [];
-          for (var i = 0; i < res.length; i++) {
+      .prompt([
+        {
+          type: "list",
+          name: "department",
+          message: "Which department's employee would you like to see?",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < res.length; i++) {
               choiceArray.push(res[i].department);
             }
             return choiceArray;
@@ -110,8 +119,8 @@ function begin() {
         },
       ])
       .then(function (answer) {
-        db.query(
-          "SELECT employee.first_name, employee.last_name, role.title, role.salary, department.department FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
+        connection.query(
+          "SELECT employee.first_name, employee.last_name, role.title, role.salary, FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
           function (err, res) {
             var deptArr = [];
             for (var i = 0; i < res.length; i++) {
@@ -127,7 +136,7 @@ function begin() {
   });
 }
 
-// View list of employees by role
+// View list of employeess by role
 function viewRole() {
   connection.query("SELECT * FROM role", function (err, res) {
     if (err) throw err;
@@ -137,7 +146,7 @@ function viewRole() {
         {
           type: "list",
           name: "role",
-          message: "Which role's employees would you like to see?",
+          message: "Which role's employee would you like to see?",
           choices: function () {
             var choiceArray = [];
             for (var i = 0; i < res.length; i++) {
@@ -148,8 +157,8 @@ function viewRole() {
         },
       ])
       .then(function (answer) {
-        db.query(
-          "SELECT employee.first_name, employee.last_name, role.title, role.salary, department.department FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
+        connection.query(
+          "SELECT employee.first_name, employee.last_name, role.title, role.salary, FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
           function (err, res) {
             var roleArr = [];
             for (var i = 0; i < res.length; i++) {
@@ -166,9 +175,8 @@ function viewRole() {
 }
 
 // Select types of roles from database
-var roleArr = [];
-function readRoles() {
-  db.query("SELECT * FROM role", function (err, res) {
+function readRole() {
+  connection.query("SELECT * FROM role", function (err, res) {
     if (err) throw err;
     for (var i = 0; i < res.length; i++) {
       roleArr.push(res[i].title);
@@ -178,68 +186,64 @@ function readRoles() {
 }
 
 // Select managers from database
-var managerArr = [];
 function readManager() {
-  db.query(
+  connection.query(
     "SELECT first_name, last_name FROM employee WHERE manager_id IS NULL",
     function (err, res) {
-      if (err) throw err;
-      for (var i = 0; i < res.length; i++) {
-        managerArr.push(res[i].first_name + " " + res[i].last_name);
-      }
+  
     }
   );
   return managerArr;
 }
 
-// Add employee
-function addEmployee() {
+// Add an employees
+function addemployees() {
   inquirer
     .prompt([
       {
         type: "input",
         name: "firstName",
-        message: "What is the employee's first name?",
+        message: "What is the employees's first name?",
       },
       {
         type: "input",
         name: "lastName",
-        message: "What is the employee's last name?",
+        message: "What is the employees's last name?",
       },
       {
         type: "list",
         name: "role",
-        message: "What is the employee's role?",
-        choices: readRoles(),
+        message: "What is the employees's role?",
+        choices: readRole(),
       },
       {
         type: "list",
         name: "manager",
-        message: "Who is the employee's manager?",
+        message: "Who is the employees's manager?",
         choices: readManager(),
       },
     ])
     .then(function (answers) {
-      var roleId = readRoles().indexOf(answers.role) + 1;
+      var roleId = readRole().indexOf(answers.role) + 1;
       var managerId = readManager().indexOf(answers.manager) + 1;
       connection.query(
-        "INSERT INTO employee SET ?",
+        "INSERT INTO employees SET ?",
         {
           first_name: answers.firstName,
           last_name: answers.lastName,
-          manager_id: managerId,
           role_id: roleId,
+          manager_id: managerId,
         },
         function (err) {
           if (err) throw err;
-          console.log("Added Employee!");
+          console.log("Added employee!");
           begin();
         }
       );
     });
 }
 
-// Add departments
+// Add a department
 function addDept() {
   inquirer
     .prompt([
@@ -250,7 +254,7 @@ function addDept() {
       },
     ])
     .then(function (res) {
-      db.query("INSERT INTO department SET ?", {
+      connection.query("INSERT INTO department SET ?", {
         department: res.department,
       });
       console.log("Department Added");
@@ -258,7 +262,7 @@ function addDept() {
     });
 }
 
-// Add role
+// Add a role
 function addRole() {
   inquirer
     .prompt([
@@ -269,7 +273,7 @@ function addRole() {
       },
     ])
     .then(function (res) {
-      connection.query("INSERT INTO role SET?", {
+      db.query("INSERT INTO role SET?", {
         title: res.role,
       });
       console.log("Role Added");
@@ -277,9 +281,9 @@ function addRole() {
     });
 }
 
-// Update the employee's role
+// Update the employees's role
 function updateEmployee() {
-  db.query(
+  connection.query(
     "SELECT employee.first_name, role.title FROM employee INNER JOIN role on role.id = employee.role_id ",
     function (err, res) {
       if (err) throw err;
@@ -313,7 +317,7 @@ function updateEmployee() {
         ])
         .then(function (answer) {
           var roleId = readRoles().indexOf(answer.role) + 1;
-          db.query(
+          connection.query(
             "UPDATE employee SET ? WHERE ? ",
             [
               {
@@ -333,4 +337,3 @@ function updateEmployee() {
     }
   );
 }
-
