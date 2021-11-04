@@ -44,9 +44,9 @@ function begin() {
         message: "What would you like to do?",
         name: "action",
         choices: [
-          "View All the employeess",
-          "View All the employeess By Department",
-          "View All the employeess by Role",
+          "View All the employees",
+          "View All the employees By Department",
+          "View All the employees by Role",
           "Add An employees",
           "Add A Department",
           "Add A Role",
@@ -57,13 +57,13 @@ function begin() {
     ])
     .then(function (answer) {
       switch (answer.action) {
-        case "View All the employeess":
+        case "View All the employees":
           viewAll();
           break;
-        case "View All the employeess By Department":
+        case "View All the employees By Department":
           viewDept();
           break;
-        case "View All the employeess by Role":
+        case "View All the employees by Role":
           viewRole();
           break;
         case "Add An employees":
@@ -80,7 +80,6 @@ function begin() {
           break;
         case "Quit":
           return;
-          console.log(answer.action);
       }
     });
 }
@@ -100,6 +99,7 @@ function viewAll() {
 
 // View the list of all employees by department
 function viewDept() {
+  // Select all departments from database
   connection.query("SELECT * FROM department", function (err, res) {
     if (err) throw err;
 
@@ -120,15 +120,15 @@ function viewDept() {
       ])
       .then(function (answer) {
         connection.query(
-          "SELECT employee.first_name, employee.last_name, role.title, role.salary, FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
+          "SELECT employee.first_name, employee.last_name, role.title, role.salary, FROM employee INNER JOIN role on employee.role_id = role.id INNER JOIN department on department.id = role.department_id",
           function (err, res) {
-            var deptArr = [];
+            var deptArray = [];
             for (var i = 0; i < res.length; i++) {
               if (answer.department === res[i].department) {
-                deptArr.push(res[i]);
+                deptArray.push(res[i]);
               }
             }
-            console.table(deptArr);
+            console.table(deptArray);
             begin();
           }
         );
@@ -159,14 +159,14 @@ function viewRole() {
       .then(function (answer) {
         connection.query(
           "SELECT employee.first_name, employee.last_name, role.title, role.salary, FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
-          function (err, res) {
-            var roleArr = [];
+          function (_err, res) {
+            var roleArray = [];
             for (var i = 0; i < res.length; i++) {
               if (answer.role === res[i].title) {
-                roleArr.push(res[i]);
+                roleArray.push(res[i]);
               }
             }
-            console.table(roleArr);
+            console.table(roleArray);
             begin();
           }
         );
@@ -179,21 +179,20 @@ function readRole() {
   connection.query("SELECT * FROM role", function (err, res) {
     if (err) throw err;
     for (var i = 0; i < res.length; i++) {
-      roleArr.push(res[i].title);
+      roleArray.push(res[i].title);
     }
   });
-  return roleArr;
+  return roleArray;
 }
 
 // Select managers from database
 function readManager() {
   connection.query(
     "SELECT first_name, last_name FROM employee WHERE manager_id IS NULL",
-    function (err, res) {
-  
+    function (_err, _res) {
     }
   );
-  return managerArr;
+  return managerArray;
 }
 
 // Add an employees
@@ -219,7 +218,7 @@ function addemployees() {
       {
         type: "list",
         name: "manager",
-        message: "Who is the employees's manager?",
+        message: "Who is the employees's manager?(may be Null if There is no manager)",
         choices: readManager(),
       },
     ])
@@ -295,11 +294,11 @@ function updateEmployee() {
             name: "employee",
             message: "Which employee's role will you update?",
             choices: function () {
-              var employeeArr = [];
+              var employeeArray = [];
               for (var i = 0; i < res.length; i++) {
-                employeeArr.push(res[i].first_name);
+                employeeArray.push(res[i].first_name);
               }
-              return employeeArr;
+              return employeeArray;
             },
           },
           {
@@ -307,11 +306,11 @@ function updateEmployee() {
             name: "role",
             message: "Which role will you assign the selected employee?",
             choices: function () {
-              var roleArr = [];
+              var roleArray = [];
               for (var i = 0; i < res.length; i++) {
-                roleArr.push(res[i].title);
+                roleArray.push(res[i].title);
               }
-              return roleArr;
+              return roleArray;
             },
           },
         ])
@@ -327,7 +326,7 @@ function updateEmployee() {
                 first_name: answer.employee,
               },
             ],
-            function (err, res) {
+            function (err, _res) {
               if (err) throw err;
               console.log("Role Updated!");
               begin();
