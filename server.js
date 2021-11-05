@@ -32,8 +32,8 @@ connection.connect(function (err) {
   begin();
 });
 
-var roleArr = [];
-var managerArr = [];
+var roleArray = [];
+var managerArray = [];
 
 // function which Begins the prompts for the user
 function begin() {
