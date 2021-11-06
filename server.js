@@ -66,8 +66,8 @@ function begin() {
         case "View All the employees by Role":
           viewRole();
           break;
-        case "Add An employees":
-          addemployees();
+        case "Add An Employee":
+          addEmployees();
           break;
         case "Add A Department":
           addDept();
@@ -76,7 +76,7 @@ function begin() {
           addRole();
           break;
         case "Update the employees Role":
-          updateemployees();
+          updateEmployees();
           break;
         case "Quit":
           return;
@@ -111,10 +111,10 @@ function viewDept() {
           message: "Which department's employee would you like to see?",
           choices: function () {
             var choiceArray = [];
-            for (var i = 0; i < res.length; i++) {
-              choiceArray.push(res[i].department);
-            }
-            return choiceArray;
+            // for (var i = 0; i < res.length; i++) {
+            //   choiceArray.push(res[i].department);
+            // }
+            // return choiceArray;
           },
         },
       ])
@@ -136,37 +136,52 @@ function viewDept() {
   });
 }
 
-// View list of employeess by role
-function viewRole() {
-  connection.query("SELECT * FROM role", function (err, res) {
+// add a new role
+// ask user for role title, salary, and department
+function addRole() {
+  connection.query("SELECT * FROM department", function (err, res) {
     if (err) throw err;
 
     inquirer
       .prompt([
         {
+          type: "input",
+          name: "title",
+          message: "What is the title of the role?",
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary of the role?",
+        },
+        {
           type: "list",
-          name: "role",
-          message: "Which role's employee would you like to see?",
-          choices: function () {
-            var choiceArray = [];
-            for (var i = 0; i < res.length; i++) {
-              choiceArray.push(res[i].title);
-            }
-            return choiceArray;
-          },
+          name: "department",
+          message: "Which department does the role belong to?",
+          // choices will be populated by the readDept function
+          // choices: readDept(),
         },
       ])
+        //   choices: function () {
+        //     var choiceArray = [];
+        //     for (var i = 0; i < res.length; i++) {
+        //       choiceArray.push(res[i].department);
+        //     }
+        //     return choiceArray;
+        //   },
+        // },
+      // ])
       .then(function (answer) {
         connection.query(
-          "SELECT employee.first_name, employee.last_name, role.title, role.salary, FROM employee INNER JOIN role on role.id = employee.role_id INNER JOIN department on department.id = role.department_id",
-          function (_err, res) {
-            var roleArray = [];
-            for (var i = 0; i < res.length; i++) {
-              if (answer.role === res[i].title) {
-                roleArray.push(res[i]);
-              }
-            }
-            console.table(roleArray);
+          "INSERT INTO role SET ?",
+          {
+            title: answer.title,
+            salary: answer.salary,
+            department_id: answer.department,
+          },
+          function (err, res) {
+            if (err) throw err;
+            console.log(res.affectedRows + " role inserted!\n");
             begin();
           }
         );
@@ -174,13 +189,47 @@ function viewRole() {
   });
 }
 
+// viewRole
+  function viewRole() {
+    connection.query("SELECT * FROM role", function (err, res) {
+      if (err) throw err;
+
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "role",
+            message: "Which role would you like to see?",
+            choices: function () {
+              var choiceArray = [];
+              for (var i = 0; i < res.length; i++) {
+                choiceArray.push(res[i].title);
+              }
+              return choiceArray;
+            },
+          },
+        ])
+        .then(function (answer) {
+          connection.query(
+            "SELECT employee.first_name, employee.last_name, role.title, role.salary, CONCAT(manager.first_name, ' ' ,manager.last_name) AS manager FROM employee INNER JOIN role on employee.role_id = role.id INNER JOIN department on department.id = role.department_id left join employee manager on employee.manager_id = employee.id;",
+            function (err, res) {
+              var roleArray = [];
+              for (var i = 0; i < res.length; i++) {
+                if (answer.role === res[i].title) {
+                  roleArray.push(res[i]);
+                }
+              }
+              console.table(roleArray);
+              begin();
+            }
+          );
+        });
+    });
+  }
+
 // Select types of roles from database
 function readRole() {
   connection.query("SELECT * FROM role", function (err, res) {
-    if (err) throw err;
-    for (var i = 0; i < res.length; i++) {
-      roleArray.push(res[i].title);
-    }
   });
   return roleArray;
 }
@@ -196,7 +245,7 @@ function readManager() {
 }
 
 // Add an employees
-function addemployees() {
+function addEmployees() {
   inquirer
     .prompt([
       {
@@ -213,7 +262,8 @@ function addemployees() {
         type: "list",
         name: "role",
         message: "What is the employees's role?",
-        choices: readRole(),
+        // choices: readRole(),
+        // make a list where the user can choose a role
       },
       {
         type: "list",
@@ -249,7 +299,7 @@ function addDept() {
       {
         type: "input",
         name: "department",
-        message: "What is the name of the department?",
+        message: "What is the name of the department ?",
       },
     ])
     .then(function (res) {
@@ -268,71 +318,69 @@ function addRole() {
       {
         type: "input",
         name: "role",
-        message: "What is the name of the role?",
+        message: "What is the name of the role ?",
+        choices: [
+
+        ]
       },
     ])
     .then(function (res) {
-      db.query("INSERT INTO role SET?", {
-        title: res.role,
-      });
+      connection.query("INSERT INTO role SET ?", 
+       res
+      );
       console.log("Role Added");
       begin();
     });
 }
 
 // Update the employees's role
-function updateEmployee() {
-  connection.query(
-    "SELECT employee.first_name, role.title FROM employee INNER JOIN role on role.id = employee.role_id ",
-    function (err, res) {
-      if (err) throw err;
-
-      inquirer
-        .prompt([
+function updateEmployees() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "firstName",
+        message: "What is the employees's first name?",
+      },
+      {
+        type: "input",
+        name: "lastName",
+        message: "What is the employees's last name?",
+      },
+      {
+        type: "list",
+        name: "role",
+        message: "What is the employees's role?",
+        choices: readRole(),
+      },
+      {
+        type: "list",
+        name: "manager",
+        message: "Who is the employees's manager?(may be Null if There is no manager)",
+        choices: readManager(),
+      },
+    ])
+    .then(function (answers) {
+      console.log(readRole());
+      var roleId = readRole().indexOf(answers.role) + 1;
+      var managerId = readManager().indexOf(answers.manager) + 1;
+      connection.query(
+        "UPDATE employee SET ? WHERE ?",
+        [
           {
-            type: "list",
-            name: "employee",
-            message: "Which employee's role will you update?",
-            choices: function () {
-              var employeeArray = [];
-              for (var i = 0; i < res.length; i++) {
-                employeeArray.push(res[i].first_name);
-              }
-              return employeeArray;
-            },
+            role_id: roleId,
+            manager_id: managerId,
           },
           {
-            type: "list",
-            name: "role",
-            message: "Which role will you assign the selected employee?",
-            choices: function () {
-              var roleArray = [];
-              for (var i = 0; i < res.length; i++) {
-                roleArray.push(res[i].title);
-              }
-              return roleArray;
-            },
+            first_name: answers.firstName,
+            last_name: answers.lastName,
           },
-        ])
-        .then(function (answer) {
-          var roleId = readRoles().indexOf(answer.role) + 1;
-          connection.query(
-            "UPDATE employee SET ? WHERE ? ",
-            [
-              {
-                role_id: roleId,
-              },
-              {
-                first_name: answer.employee,
-              },
-            ],
-            function (err, _res) {
-              if (err) throw err;
-              console.log("Role Updated!");
-              begin();
-            }
-          );
-        });
-    }
-  );
+        ],
+        function (err) {
+          if (err) throw err;
+          console.log("Updated employee!");
+          begin();
+        }
+      );
+    });
 }
