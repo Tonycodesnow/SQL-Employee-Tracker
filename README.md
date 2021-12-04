@@ -59,7 +59,7 @@ What the command line interface looks like:
 
 Click on the link below for a video demonstration of the application and the generated index.html file at the end:
 
-https://www.youtube.com/watch?v=2_dT2A-LKOg
+https://watch.screencastify.com/v/D3H1c4cXKI6kOcv53z6T
 
 ## Deployed application link
 
